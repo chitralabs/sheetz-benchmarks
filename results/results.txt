@@ -1,23 +1,38 @@
-# Sheetz Benchmarks — Sample Results
+# Sheetz Benchmarks — Full Results
 #
-# Run your own benchmarks:
-#   mvn clean package
-#   java -jar target/benchmarks.jar
+# JVM:      JDK 11.0.30, OpenJDK 64-Bit Server VM
+# Hardware: Apple Silicon (macOS Darwin 24.6.0)
+# JMH:     1.37
+# Config:  2 forks, 3 warmup iterations (1s), 5 measurement iterations (1s)
+# Mode:    Average time per operation (lower is better)
 #
-# Quick smoke test (1 fork, 1 warmup, 1 iteration):
-#   java -jar target/benchmarks.jar -f 1 -wi 1 -i 1
-#
-# Results will vary based on hardware, JVM, and OS.
-# Below are placeholder results — replace with your actual run.
+# Run:     mvn clean package && java -jar target/benchmarks.jar
 
-Benchmark                            (rowCount)  Mode  Cnt     Score     Error  Units
-ReadBenchmark.sheetzRead                   1000  avgt   10     TBD       TBD    ms/op
-ReadBenchmark.poiRead                      1000  avgt   10     TBD       TBD    ms/op
-ReadBenchmark.easyExcelRead                1000  avgt   10     TBD       TBD    ms/op
-ReadBenchmark.fastExcelRead                1000  avgt   10     TBD       TBD    ms/op
-ReadBenchmark.poijiRead                    1000  avgt   10     TBD       TBD    ms/op
-
-WriteBenchmark.sheetzWrite                 1000  avgt   10     TBD       TBD    ms/op
-WriteBenchmark.poiWrite                    1000  avgt   10     TBD       TBD    ms/op
-WriteBenchmark.easyExcelWrite              1000  avgt   10     TBD       TBD    ms/op
-WriteBenchmark.fastExcelWrite              1000  avgt   10     TBD       TBD    ms/op
+Benchmark                      (rowCount)  Mode  Cnt     Score     Error  Units
+ReadBenchmark.easyExcelRead          1000  avgt   10     4.908 ±   0.546  ms/op
+ReadBenchmark.easyExcelRead         10000  avgt   10    42.659 ±   6.874  ms/op
+ReadBenchmark.easyExcelRead        100000  avgt   10   334.167 ±  15.525  ms/op
+ReadBenchmark.fastExcelRead          1000  avgt   10     2.427 ±   0.117  ms/op
+ReadBenchmark.fastExcelRead         10000  avgt   10    24.882 ±   1.750  ms/op
+ReadBenchmark.fastExcelRead        100000  avgt   10   210.171 ±   4.103  ms/op
+ReadBenchmark.poiRead                1000  avgt   10    10.858 ±   0.461  ms/op
+ReadBenchmark.poiRead               10000  avgt   10   106.019 ±   9.107  ms/op
+ReadBenchmark.poiRead              100000  avgt   10  1097.197 ±  79.907  ms/op
+ReadBenchmark.poijiRead              1000  avgt   10    12.262 ±   0.400  ms/op
+ReadBenchmark.poijiRead             10000  avgt   10   114.917 ±   1.970  ms/op
+ReadBenchmark.poijiRead            100000  avgt   10  1042.158 ±  50.283  ms/op
+ReadBenchmark.sheetzRead             1000  avgt   10    13.176 ±   0.575  ms/op
+ReadBenchmark.sheetzRead            10000  avgt   10   128.353 ±  12.948  ms/op
+ReadBenchmark.sheetzRead           100000  avgt   10  1285.889 ±  64.962  ms/op
+WriteBenchmark.easyExcelWrite        1000  avgt   10    11.437 ±   0.499  ms/op
+WriteBenchmark.easyExcelWrite       10000  avgt   10    58.604 ±   1.540  ms/op
+WriteBenchmark.easyExcelWrite      100000  avgt   10   542.837 ±  33.322  ms/op
+WriteBenchmark.fastExcelWrite        1000  avgt   10     6.475 ±   1.465  ms/op
+WriteBenchmark.fastExcelWrite       10000  avgt   10    31.953 ±   1.000  ms/op
+WriteBenchmark.fastExcelWrite      100000  avgt   10   309.697 ±  17.593  ms/op
+WriteBenchmark.poiWrite              1000  avgt   10    22.462 ±   0.525  ms/op
+WriteBenchmark.poiWrite             10000  avgt   10   217.173 ±   9.585  ms/op
+WriteBenchmark.poiWrite            100000  avgt   10  2453.353 ± 112.237  ms/op
+WriteBenchmark.sheetzWrite           1000  avgt   10    23.147 ±   0.623  ms/op
+WriteBenchmark.sheetzWrite          10000  avgt   10   232.513 ±  18.695  ms/op
+WriteBenchmark.sheetzWrite         100000  avgt   10   423.745 ±  20.140  ms/op

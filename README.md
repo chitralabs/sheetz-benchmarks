@@ -115,28 +115,30 @@ sheet.openStream().skip(1).forEach(row -> {
 
 Benchmarks measure **average time per operation** (lower is better) using [JMH](https://openjdk.org/projects/code-tools/jmh/).
 
-Run your own benchmarks to populate these tables:
+> JDK 11.0.30 (OpenJDK), Apple Silicon, 2 forks / 3 warmup / 5 measurement iterations
 
-### Read Performance (ms/op)
-
-| Library | 1K rows | 10K rows | 100K rows |
-|---------|--------:|---------:|----------:|
-| Sheetz | — | — | — |
-| Apache POI | — | — | — |
-| EasyExcel | — | — | — |
-| FastExcel | — | — | — |
-| Poiji | — | — | — |
-
-### Write Performance (ms/op)
+### Read Performance (ms/op, lower is better)
 
 | Library | 1K rows | 10K rows | 100K rows |
 |---------|--------:|---------:|----------:|
-| Sheetz | — | — | — |
-| Apache POI | — | — | — |
-| EasyExcel | — | — | — |
-| FastExcel | — | — | — |
+| FastExcel | 2.43 ± 0.12 | 24.88 ± 1.75 | 210.17 ± 4.10 |
+| EasyExcel | 4.91 ± 0.55 | 42.66 ± 6.87 | 334.17 ± 15.53 |
+| Apache POI | 10.86 ± 0.46 | 106.02 ± 9.11 | 1,097.20 ± 79.91 |
+| Poiji | 12.26 ± 0.40 | 114.92 ± 1.97 | 1,042.16 ± 50.28 |
+| **Sheetz** | 13.18 ± 0.58 | 128.35 ± 12.95 | 1,285.89 ± 64.96 |
 
-> Run benchmarks on your own hardware to fill in these tables. Results vary by JVM, OS, and machine specs.
+### Write Performance (ms/op, lower is better)
+
+| Library | 1K rows | 10K rows | 100K rows |
+|---------|--------:|---------:|----------:|
+| FastExcel | 6.48 ± 1.47 | 31.95 ± 1.00 | 309.70 ± 17.59 |
+| EasyExcel | 11.44 ± 0.50 | 58.60 ± 1.54 | 542.84 ± 33.32 |
+| **Sheetz** | 23.15 ± 0.62 | 232.51 ± 18.70 | **423.75 ± 20.14** |
+| Apache POI | 22.46 ± 0.53 | 217.17 ± 9.59 | 2,453.35 ± 112.24 |
+
+**Key takeaway:** Sheetz trades a small overhead for annotation-based convenience. At 100K rows, Sheetz writes are **5.8x faster than raw Apache POI** thanks to automatic streaming — while requiring only 1 line of code vs ~25.
+
+> Results vary by JVM, OS, and hardware. Run `java -jar target/benchmarks.jar` to benchmark on your machine.
 
 ---
 
