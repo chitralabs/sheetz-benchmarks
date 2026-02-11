@@ -1,0 +1,23 @@
+# Sheetz Benchmarks — Sample Results
+#
+# Run your own benchmarks:
+#   mvn clean package
+#   java -jar target/benchmarks.jar
+#
+# Quick smoke test (1 fork, 1 warmup, 1 iteration):
+#   java -jar target/benchmarks.jar -f 1 -wi 1 -i 1
+#
+# Results will vary based on hardware, JVM, and OS.
+# Below are placeholder results — replace with your actual run.
+
+Benchmark                            (rowCount)  Mode  Cnt     Score     Error  Units
+ReadBenchmark.sheetzRead                   1000  avgt   10     TBD       TBD    ms/op
+ReadBenchmark.poiRead                      1000  avgt   10     TBD       TBD    ms/op
+ReadBenchmark.easyExcelRead                1000  avgt   10     TBD       TBD    ms/op
+ReadBenchmark.fastExcelRead                1000  avgt   10     TBD       TBD    ms/op
+ReadBenchmark.poijiRead                    1000  avgt   10     TBD       TBD    ms/op
+
+WriteBenchmark.sheetzWrite                 1000  avgt   10     TBD       TBD    ms/op
+WriteBenchmark.poiWrite                    1000  avgt   10     TBD       TBD    ms/op
+WriteBenchmark.easyExcelWrite              1000  avgt   10     TBD       TBD    ms/op
+WriteBenchmark.fastExcelWrite              1000  avgt   10     TBD       TBD    ms/op

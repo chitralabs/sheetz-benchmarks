@@ -1,0 +1,13 @@
+target/
+dependency-reduced-pom.xml
+output/
+benchmark_data/
+*.class
+*.jar
+*.log
+.idea/
+*.iml
+.DS_Store
+.settings/
+.classpath
+.project
