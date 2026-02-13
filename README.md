@@ -1,43 +1,56 @@
-# Sheetz Benchmarks
+# Sheetz Benchmarks — Java Excel Library Comparison: Code Simplicity & Performance
 
-[![Java](https://img.shields.io/badge/Java-11%2B-blue)](https://openjdk.org/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-green)](LICENSE)
+[![Java 11+](https://img.shields.io/badge/Java-11%2B-blue.svg)](https://openjdk.java.net/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
+[![JMH](https://img.shields.io/badge/JMH-1.37-orange.svg)](https://openjdk.org/projects/code-tools/jmh/)
+[![GitHub stars](https://img.shields.io/github/stars/chitralabs/sheetz?style=social)](https://github.com/chitralabs/sheetz)
 
-**Side-by-side comparison of [Sheetz](https://github.com/chitralabs/sheetz) vs the 4 major Java Excel libraries** — code simplicity and JMH performance benchmarks.
+**How does [Sheetz](https://github.com/chitralabs/sheetz) compare to Apache POI, EasyExcel, FastExcel, and Poiji?** This project answers that question with side-by-side code comparisons and reproducible JMH performance benchmarks across 1K, 10K, and 100K rows.
 
-| Library | Version | Type |
-|---------|---------|------|
-| [Sheetz](https://github.com/chitralabs/sheetz) | 1.0.1 | Annotation-based, zero boilerplate |
-| [Apache POI](https://poi.apache.org/) | 5.2.5 | Manual cell-level API |
-| [EasyExcel](https://github.com/alibaba/easyexcel) | 4.0.3 | Annotation-based, listener pattern |
-| [FastExcel](https://github.com/dhatim/fastexcel) | 0.19.0 | Lightweight cell-level API |
-| [Poiji](https://github.com/ozlerhakan/poiji) | 5.2.0 | Read-only, annotation-based |
+### TL;DR
+
+- Sheetz needs **1 line** to read or write Excel. Apache POI needs **25+**. EasyExcel needs **12+** (with listener).
+- At 100K rows, Sheetz writes are **5.8x faster than Apache POI** thanks to automatic SXSSF streaming.
+- FastExcel and EasyExcel have faster raw throughput, but require significantly more code and lack features like validation, multi-format support, and automatic type conversion.
+
+> **New to Sheetz?** See the [main repo](https://github.com/chitralabs/sheetz) for docs and API reference, or browse [8 runnable examples](https://github.com/chitralabs/sheetz-examples).
+
+---
+
+## Libraries Compared
+
+| Library | Version | API Style | Read | Write | Annotations | Validation |
+|---------|---------|-----------|:----:|:-----:|:-----------:|:----------:|
+| [**Sheetz**](https://github.com/chitralabs/sheetz) | 1.0.1 | One-liner, annotation-based | Yes | Yes | `@Column` | Built-in |
+| [Apache POI](https://poi.apache.org/) | 5.2.5 | Manual cell-level API | Yes | Yes | None | None |
+| [EasyExcel](https://github.com/alibaba/easyexcel) | 4.0.3 | Annotation + listener pattern | Yes | Yes | `@ExcelProperty` | None |
+| [FastExcel](https://github.com/dhatim/fastexcel) | 0.19.0 | Lightweight cell-level API | Yes | Yes | None | None |
+| [Poiji](https://github.com/ozlerhakan/poiji) | 5.2.0 | Annotation-based (read-only) | Yes | No | `@ExcelCellName` | None |
 
 ---
 
 ## Code Comparison
 
-How many lines does it take to **write 10 products to Excel and read them back**?
+The question: **How many lines does it take to write 10 products to Excel and read them back?**
 
-| Library | Write | Read | Total | Notes |
-|---------|------:|-----:|------:|-------|
+| Library | Write | Read | Total Lines | Notes |
+|---------|------:|-----:|------------:|-------|
 | **Sheetz** | **1** | **1** | **~15** | One-liner read & write |
-| Apache POI | ~25 | ~20 | **~60** | Manual workbook/sheet/row/cell |
-| EasyExcel | ~3 | ~12 | **~30** | Separate model + listener pattern |
-| FastExcel | ~18 | ~15 | **~45** | Cell-by-cell API |
-| Poiji | N/A | ~1 | **~15** | Read-only library |
+| Apache POI | ~25 | ~20 | ~60 | Manual workbook/sheet/row/cell |
+| EasyExcel | ~3 | ~12 | ~30 | Separate model + listener pattern |
+| FastExcel | ~18 | ~15 | ~45 | Cell-by-cell positional API |
+| Poiji | — | ~1 | ~15 | Read-only library |
 
-### Sheetz (1 line write, 1 line read)
+### Sheetz — 1 line write, 1 line read
 
 ```java
-// Write
 Sheetz.write(products, "products.xlsx");
-
-// Read
 List<Product> result = Sheetz.read("products.xlsx", Product.class);
 ```
 
-### Apache POI (~25 lines write, ~20 lines read)
+That's the entire implementation. No workbook objects, no cell iteration, no type casting.
+
+### Apache POI — ~25 lines write, ~20 lines read
 
 ```java
 // Write — manual workbook creation
@@ -70,7 +83,7 @@ try (Workbook workbook = new XSSFWorkbook(new FileInputStream("products.xlsx")))
 }
 ```
 
-### EasyExcel (3 lines write, ~12 lines read with listener)
+### EasyExcel — 3 lines write, ~12 lines read (listener pattern)
 
 ```java
 // Write
@@ -88,7 +101,7 @@ EasyExcel.read("products.xlsx", ProductEasyExcel.class,
     }).sheet().doRead();
 ```
 
-### FastExcel (~18 lines write, ~15 lines read)
+### FastExcel — ~18 lines write, ~15 lines read
 
 ```java
 // Write — cell by cell
@@ -109,15 +122,28 @@ sheet.openStream().skip(1).forEach(row -> {
 });
 ```
 
+[View all comparison source code](src/main/java/io/github/chitralabs/sheetz/benchmarks/comparison/)
+
 ---
 
 ## Performance Benchmarks (JMH)
 
-Benchmarks measure **average time per operation** (lower is better) using [JMH](https://openjdk.org/projects/code-tools/jmh/).
+All benchmarks measure **average time per operation** (lower is better) using [JMH 1.37](https://openjdk.org/projects/code-tools/jmh/).
 
-> JDK 11.0.30 (OpenJDK), Apple Silicon, 2 forks / 3 warmup / 5 measurement iterations
+> **Environment:** JDK 11.0.30 (OpenJDK), Apple Silicon (macOS), 2 forks, 3 warmup iterations, 5 measurement iterations
 
-### Read Performance (ms/op, lower is better)
+### Write Performance (ms/op — lower is better)
+
+| Library | 1K rows | 10K rows | 100K rows |
+|---------|--------:|---------:|----------:|
+| FastExcel | 6.48 ± 1.47 | 31.95 ± 1.00 | 309.70 ± 17.59 |
+| EasyExcel | 11.44 ± 0.50 | 58.60 ± 1.54 | 542.84 ± 33.32 |
+| **Sheetz** | **23.15 ± 0.62** | **232.51 ± 18.70** | **423.75 ± 20.14** |
+| Apache POI | 22.46 ± 0.53 | 217.17 ± 9.59 | 2,453.35 ± 112.24 |
+
+At small file sizes, Sheetz and Apache POI are comparable. **At 100K rows, Sheetz is 5.8x faster than POI** because it automatically switches to SXSSF streaming — something POI requires you to configure manually.
+
+### Read Performance (ms/op — lower is better)
 
 | Library | 1K rows | 10K rows | 100K rows |
 |---------|--------:|---------:|----------:|
@@ -125,20 +151,20 @@ Benchmarks measure **average time per operation** (lower is better) using [JMH](
 | EasyExcel | 4.91 ± 0.55 | 42.66 ± 6.87 | 334.17 ± 15.53 |
 | Apache POI | 10.86 ± 0.46 | 106.02 ± 9.11 | 1,097.20 ± 79.91 |
 | Poiji | 12.26 ± 0.40 | 114.92 ± 1.97 | 1,042.16 ± 50.28 |
-| **Sheetz** | 13.18 ± 0.58 | 128.35 ± 12.95 | 1,285.89 ± 64.96 |
+| **Sheetz** | **13.18 ± 0.58** | **128.35 ± 12.95** | **1,285.89 ± 64.96** |
 
-### Write Performance (ms/op, lower is better)
+For reads, FastExcel and EasyExcel are faster at raw throughput. Sheetz performs comparably to Apache POI and Poiji while offering annotation-based mapping, automatic type conversion, and built-in validation that those libraries don't provide.
 
-| Library | 1K rows | 10K rows | 100K rows |
-|---------|--------:|---------:|----------:|
-| FastExcel | 6.48 ± 1.47 | 31.95 ± 1.00 | 309.70 ± 17.59 |
-| EasyExcel | 11.44 ± 0.50 | 58.60 ± 1.54 | 542.84 ± 33.32 |
-| **Sheetz** | 23.15 ± 0.62 | 232.51 ± 18.70 | **423.75 ± 20.14** |
-| Apache POI | 22.46 ± 0.53 | 217.17 ± 9.59 | 2,453.35 ± 112.24 |
+### The Tradeoff
 
-**Key takeaway:** Sheetz trades a small overhead for annotation-based convenience. At 100K rows, Sheetz writes are **5.8x faster than raw Apache POI** thanks to automatic streaming — while requiring only 1 line of code vs ~25.
+Sheetz prioritizes **developer experience** — 1 line of code, automatic type conversion, built-in validation, multi-format support. Libraries like FastExcel and EasyExcel win on raw speed but require more code and offer fewer features out of the box.
 
-> Results vary by JVM, OS, and hardware. Run `java -jar target/benchmarks.jar` to benchmark on your machine.
+Choose based on your priority:
+- **Fastest throughput →** FastExcel or EasyExcel
+- **Fewest lines of code + most features →** Sheetz
+- **Already using POI and want a drop-in wrapper →** Sheetz (it uses POI internally)
+
+> Full raw JMH output is available in [`results/results.txt`](results/results.txt).
 
 ---
 
@@ -149,28 +175,25 @@ Benchmarks measure **average time per operation** (lower is better) using [JMH](
 - Java 11+
 - Maven 3.6+
 
-### Comparison Examples
+### Code Comparison Demos
 
-Run any comparison demo:
+Each comparison class has a `main()` that writes products to Excel and reads them back, showing the actual code needed for each library.
 
 ```bash
-# Sheetz
-mvn compile exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.SheetzComparison"
+# Clone and compile
+git clone https://github.com/chitralabs/sheetz-benchmarks.git
+cd sheetz-benchmarks
+mvn compile
 
-# Apache POI
-mvn compile exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.ApachePoiComparison"
-
-# EasyExcel
-mvn compile exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.EasyExcelComparison"
-
-# FastExcel
-mvn compile exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.FastExcelComparison"
-
-# Poiji
-mvn compile exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.PoijiComparison"
+# Run any comparison
+mvn exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.SheetzComparison"
+mvn exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.ApachePoiComparison"
+mvn exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.EasyExcelComparison"
+mvn exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.FastExcelComparison"
+mvn exec:java -Dexec.mainClass="io.github.chitralabs.sheetz.benchmarks.comparison.PoijiComparison"
 ```
 
-### JMH Benchmarks
+### JMH Performance Benchmarks
 
 ```bash
 # Build the benchmark JAR
@@ -179,29 +202,34 @@ mvn clean package
 # Run all benchmarks (full run — takes ~30 minutes)
 java -jar target/benchmarks.jar
 
-# Quick smoke test (1 fork, 1 warmup iteration, 1 measurement iteration)
+# Quick smoke test (~2 minutes)
 java -jar target/benchmarks.jar -f 1 -wi 1 -i 1
 
-# Run only read benchmarks
+# Run only read or write benchmarks
 java -jar target/benchmarks.jar ReadBenchmark
-
-# Run only write benchmarks
 java -jar target/benchmarks.jar WriteBenchmark
 
-# Run with specific row count
-java -jar target/benchmarks.jar -p rowCount=1000
+# Run with a specific row count
+java -jar target/benchmarks.jar -p rowCount=10000
 ```
 
 ---
 
 ## Methodology
 
-- **Framework**: [JMH 1.37](https://openjdk.org/projects/code-tools/jmh/) (OpenJDK Microbenchmark Harness)
-- **Mode**: Average time per operation (`Mode.AverageTime`)
-- **Default config**: 2 forks, 3 warmup iterations, 5 measurement iterations
-- **Data**: Generated with fixed random seed for reproducibility
-- **File format**: `.xlsx` (OOXML) for all libraries
-- **Fairness**: All libraries read/write identical data; test files generated once in `@Setup`
+| Setting | Value |
+|---------|-------|
+| **Framework** | [JMH 1.37](https://openjdk.org/projects/code-tools/jmh/) (OpenJDK Microbenchmark Harness) |
+| **Mode** | Average time per operation (`Mode.AverageTime`) |
+| **Forks** | 2 (separate JVM processes) |
+| **Warmup** | 3 iterations, 1 second each |
+| **Measurement** | 5 iterations, 1 second each |
+| **Row counts** | 1,000 / 10,000 / 100,000 (via `@Param`) |
+| **Data** | Fixed random seed for reproducibility |
+| **File format** | `.xlsx` (OOXML) for all libraries |
+| **Fairness** | All libraries read/write identical data; test files generated once in `@Setup` |
+
+Results will vary by JVM version, OS, and hardware. Run the benchmarks yourself to get numbers for your environment.
 
 ---
 
@@ -229,11 +257,16 @@ src/main/java/io/github/chitralabs/sheetz/benchmarks/
 
 ## Links
 
-- [Sheetz on GitHub](https://github.com/chitralabs/sheetz)
+- [Sheetz — main library](https://github.com/chitralabs/sheetz)
+- [Sheetz Examples — 8 runnable demos](https://github.com/chitralabs/sheetz-examples)
 - [Sheetz on Maven Central](https://central.sonatype.com/artifact/io.github.chitralabs.sheetz/sheetz-core)
-
----
 
 ## License
 
-Apache License 2.0
+[Apache License 2.0](LICENSE) — free for commercial and personal use.
+
+---
+
+If these benchmarks helped you evaluate Sheetz, consider giving the [main repo](https://github.com/chitralabs/sheetz) a star. It helps other developers discover the project.
+
+[![Star Sheetz](https://img.shields.io/github/stars/chitralabs/sheetz?style=social)](https://github.com/chitralabs/sheetz)
