@@ -1,5 +1,6 @@
 # Sheetz Benchmarks — Java Excel Library Comparison: Code Simplicity & Performance
 
+[![Build](https://github.com/chitralabs/sheetz-benchmarks/actions/workflows/ci.yml/badge.svg)](https://github.com/chitralabs/sheetz-benchmarks/actions/workflows/ci.yml)
 [![Java 11+](https://img.shields.io/badge/Java-11%2B-blue.svg)](https://openjdk.java.net/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![JMH](https://img.shields.io/badge/JMH-1.37-orange.svg)](https://openjdk.org/projects/code-tools/jmh/)
