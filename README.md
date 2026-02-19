@@ -133,6 +133,31 @@ All benchmarks measure **average time per operation** (lower is better) using [J
 
 > **Environment:** JDK 11.0.30 (OpenJDK), Apple Silicon (macOS), 2 forks, 3 warmup iterations, 5 measurement iterations
 
+### 📊 Visual Summary
+
+The charts below are generated from the JMH results in [`results/results.txt`](results/results.txt).
+
+> **Write Performance — 100K rows (ms/op, lower is better)**
+>
+> ```
+> FastExcel   ████████░░░░░░░░░░░░░░░░░░░░░░  309ms
+> EasyExcel   █████████████░░░░░░░░░░░░░░░░░  542ms
+> Sheetz      ██████████░░░░░░░░░░░░░░░░░░░░  423ms  ← auto SXSSF streaming
+> Apache POI  ██████████████████████████████  2453ms ← no streaming, loads to memory
+> ```
+>
+> **Read Performance — 100K rows (ms/op, lower is better)**
+>
+> ```
+> FastExcel   █████░░░░░░░░░░░░░░░░░░░░░░░░░  210ms
+> EasyExcel   ████████░░░░░░░░░░░░░░░░░░░░░░  334ms
+> Apache POI  ██████████████████████████░░░░  1097ms
+> Poiji       █████████████████████████░░░░░  1042ms
+> Sheetz      ██████████████████████████████  1285ms  ← with type conversion & mapping
+> ```
+
+*Generate PNG charts: paste [`results/results.txt`](results/results.txt) into https://jmh.morethan.io*
+
 ### Write Performance (ms/op — lower is better)
 
 | Library | 1K rows | 10K rows | 100K rows |
@@ -156,14 +181,34 @@ At small file sizes, Sheetz and Apache POI are comparable. **At 100K rows, Sheet
 
 For reads, FastExcel and EasyExcel are faster at raw throughput. Sheetz performs comparably to Apache POI and Poiji while offering annotation-based mapping, automatic type conversion, and built-in validation that those libraries don't provide.
 
-### The Tradeoff
+## 🎯 When to Choose Each Library
 
-Sheetz prioritizes **developer experience** — 1 line of code, automatic type conversion, built-in validation, multi-format support. Libraries like FastExcel and EasyExcel win on raw speed but require more code and offer fewer features out of the box.
+```
+┌─────────────────────────────────────────────────────────┐
+│                    DECISION GUIDE                       │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Need maximum raw throughput?                           │
+│  → FastExcel (fastest reads & writes)                   │
+│                                                         │
+│  Need minimal code + all features?                      │
+│  → Sheetz (1-line API, validation, 19 converters)       │
+│                                                         │
+│  Already using POI everywhere?                          │
+│  → Sheetz (wraps POI, drop-in for new code)             │
+│                                                         │
+│  Processing 1M+ rows, memory is critical?               │
+│  → Sheetz.stream() or FastExcel                         │
+│                                                         │
+│  Need annotation-based mapping + read speed?            │
+│  → EasyExcel (but requires listener pattern)            │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
 
-Choose based on your priority:
-- **Fastest throughput →** FastExcel or EasyExcel
-- **Fewest lines of code + most features →** Sheetz
-- **Already using POI and want a drop-in wrapper →** Sheetz (it uses POI internally)
+**Sheetz's read speed** is comparable to Apache POI and Poiji. The difference from FastExcel/EasyExcel
+is the overhead of automatic type conversion, annotation processing, and validation — features those
+libraries don't provide. If you need those features, Sheetz gives them at no extra code cost.
 
 > Full raw JMH output is available in [`results/results.txt`](results/results.txt).
 
